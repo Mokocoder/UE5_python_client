@@ -1,6 +1,6 @@
 [ [English](README.md) | 한국어 ]
 
-# Lyra Bot
+# UE5_python_client
 
 Unreal Engine 5 네트워크 프로토콜을 순수 Python으로 구현한 헤드리스 게임 클라이언트입니다.
 UE5 Lyra Starter Game 전용 서버에 접속하여 핸드셰이크, 로그인, 액터 리플리케이션까지의 전체 연결 흐름을 처리합니다.
@@ -22,7 +22,7 @@ UE5 Lyra Starter Game 전용 서버에 접속하여 핸드셰이크, 로그인, 
 LyraServer.exe /ShooterMaps/Maps/L_Expanse -log -port=7777 -nosteam
 ```
 
-### 2. 봇 실행
+### 2. 실행
 
 ```bash
 cd client
@@ -68,7 +68,7 @@ sequenceDiagram
 
 ```
 Lyra/
-├── client/                                  # 봇 클라이언트 소스
+├── client/                                  # 클라이언트 소스
 │   ├── client.py                            # 메인 진입점
 │   ├── app_config.py                        # LOCAL_NETWORK_VERSION, ONLINE_SUBSYSTEM_TYPE
 │   ├── constants.py                         # 프로토콜 상수 (시퀀스, 채널, 엔진 버전 등)

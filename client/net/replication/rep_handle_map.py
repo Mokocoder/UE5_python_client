@@ -114,7 +114,7 @@ def _build_entries(entries: list[dict], overrides: dict, exclude: set) -> list[P
             ))
             continue
 
-        # 3) Struct with NetSerializer but no bot-side deserializer
+        # 3) Struct with NetSerializer but no client-side deserializer
         if type_str.startswith("struct:"):
             struct_tag = type_str.split(":", 1)[1] if ":" in type_str else type_str
             if struct_tag not in _MISSING_STRUCT_SERIALIZERS:

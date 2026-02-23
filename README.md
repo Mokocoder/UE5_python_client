@@ -1,6 +1,6 @@
 [ English | [한국어](README_KO.md) ]
 
-# Lyra Bot
+# UE5_python_client
 
 A headless game client implementing the Unreal Engine 5 network protocol in pure Python.
 Connects to a UE5 Lyra Starter Game dedicated server and handles the full connection flow from handshake through login to actor replication.
@@ -22,7 +22,7 @@ Extract `LyraServer.7z` and run the dedicated server:
 LyraServer.exe /ShooterMaps/Maps/L_Expanse -log -port=7777 -nosteam
 ```
 
-### 2. Run Bot
+### 2. Run client
 
 ```bash
 cd client
@@ -68,7 +68,7 @@ sequenceDiagram
 
 ```
 Lyra/
-├── client/                                  # Bot client source
+├── client/                                  # client source
 │   ├── client.py                            # Main entry point
 │   ├── app_config.py                        # LOCAL_NETWORK_VERSION, ONLINE_SUBSYSTEM_TYPE
 │   ├── constants.py                         # Protocol constants (sequence, channel, engine version, etc.)
