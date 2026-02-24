@@ -5,6 +5,36 @@
 Unreal Engine 5 네트워크 프로토콜을 순수 Python으로 구현한 헤드리스 게임 클라이언트입니다.
 UE5 Lyra Starter Game 전용 서버에 접속하여 핸드셰이크, 로그인, 액터 리플리케이션까지의 전체 연결 흐름을 처리합니다.
 
+## 목차
+
+- [요구 사항](#요구-사항)
+- [빠른 시작](#빠른-시작)
+  - [1. 서버 실행](#1-서버-실행)
+  - [2. 실행](#2-실행)
+  - [3. 종료](#3-종료)
+- [연결 흐름](#연결-흐름)
+- [프로젝트 구조](#프로젝트-구조)
+- [프로토콜 상세](#프로토콜-상세)
+  - [비트 직렬화](#비트-직렬화)
+  - [패킷 와이어 포맷](#패킷-와이어-포맷)
+    - [핸들러 프리픽스 (6비트)](#핸들러-프리픽스-6비트)
+    - [2단계 터미네이터](#2단계-터미네이터)
+    - [패킷 헤더 (32비트 고정)](#패킷-헤더-32비트-고정)
+    - [번치 (Bunch)](#번치-bunch)
+  - [채널 처리](#채널-처리)
+    - [Control 채널 (ChIndex=0)](#control-채널-chindex0)
+    - [Actor 채널](#actor-채널)
+  - [핸드셰이크](#핸드셰이크)
+  - [신뢰성 시스템](#신뢰성-시스템)
+- [데이터 파일](#데이터-파일)
+- [예제 로그](#예제-로그)
+- [확장](#확장)
+  - [스폰 프로세서 등록](#스폰-프로세서-등록)
+  - [RPC 핸들러 등록](#rpc-핸들러-등록)
+  - [RepLayout 템플릿](#replayout-템플릿)
+- [제약 사항](#제약-사항)
+- [라이선스](#라이선스)
+
 ## 요구 사항
 
 - Python 3.10+
@@ -209,7 +239,7 @@ StatelessConnectHandlerComponent가 모든 데이터 패킷 앞에 붙이는 프
 
 내부 터미네이터가 누락되면 `ZeroLastByte` 폴트 → 서버가 연결을 끊습니다.
 
-### 패킷 헤더 (32비트 고정)
+#### 패킷 헤더 (32비트 고정)
 
 `FNetPacketNotify`가 관리하는 패킷 헤더:
 
@@ -228,11 +258,11 @@ StatelessConnectHandlerComponent가 모든 데이터 패킷 앞에 붙이는 프
 [bHasPacketInfo: 1비트] → [JitterClockTimeMS: SerializeInt(1024)] [bHasServerFrameTime: 1비트] → [ServerFrameTime: 8비트]
 ```
 
-### 번치 (Bunch)
+#### 번치 (Bunch)
 
 패킷 헤더 뒤에 하나 이상의 번치가 연속됩니다. 각 번치는 특정 채널에 대한 데이터 단위입니다.
 
-#### 번치 헤더
+##### 번치 헤더
 
 ```
 [bControl: 1]
@@ -251,13 +281,13 @@ StatelessConnectHandlerComponent가 모든 데이터 패킷 앞에 붙이는 프
 [Payload: PayloadBitCount 비트]
 ```
 
-#### 채널 시퀀스
+##### 채널 시퀀스
 
 - Reliable: 채널별 0~1023 독립 시퀀스. `MakeRelative(half=512, mod=1024)`로 래핑 비교.
 - Unreliable Partial: 패킷 시퀀스를 번치 시퀀스로 사용.
 - Unreliable Non-Partial: 시퀀스 0 (순서 보장 불필요).
 
-#### 부분 번치 조립 (Partial Bunch)
+##### 부분 번치 조립 (Partial Bunch)
 
 큰 데이터는 여러 번치로 분할됩니다:
 
