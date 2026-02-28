@@ -29,7 +29,7 @@ class FBitUtil:
         if bit_count <= 0:
             return
 
-        # Small copy fast path (matches UE5.7 <= 8 bits optimization)
+        # Small copy fast path
         if bit_count <= 8:
             s_byte = src_bit >> 3
             s_off = src_bit & 7

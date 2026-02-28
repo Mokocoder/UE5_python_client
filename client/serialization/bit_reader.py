@@ -9,14 +9,13 @@ class BitReaderError(RuntimeError):
 
 
 class FBitReader:
-    __slots__ = ('_pos', '_buffer', '_num', '_error', '_bDoChecksum')
+    __slots__ = ('_pos', '_buffer', '_num', '_error')
 
     def __init__(self, src: bytes | bytearray | None = None, num_bits: int | None = None) -> None:
         self._pos: int = 0
         self._buffer: bytearray = bytearray(src or b"")
         self._num: int = num_bits if num_bits is not None else len(self._buffer) * 8
         self._error: bool = False
-        self._bDoChecksum: bool = False
         self._apply_mask()
 
     def _apply_mask(self) -> None:
