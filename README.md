@@ -5,6 +5,10 @@
 A headless game client implementing the Unreal Engine 5 network protocol in pure Python.
 Connects to a UE5 Lyra Starter Game dedicated server and handles the full connection flow from handshake through login to actor replication.
 
+## Demo
+
+[![Demo Video](https://img.youtube.com/vi/qLgJLLM0T5s/maxresdefault.jpg)](https://youtu.be/qLgJLLM0T5s)
+
 ## Table of Contents
 
 - [Requirements](#requirements)

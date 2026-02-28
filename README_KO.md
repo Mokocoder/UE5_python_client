@@ -5,6 +5,10 @@
 Unreal Engine 5 네트워크 프로토콜을 순수 Python으로 구현한 헤드리스 게임 클라이언트입니다.
 UE5 Lyra Starter Game 전용 서버에 접속하여 핸드셰이크, 로그인, 액터 리플리케이션까지의 전체 연결 흐름을 처리합니다.
 
+## 데모
+
+[![데모 영상](https://img.youtube.com/vi/qLgJLLM0T5s/maxresdefault.jpg)](https://youtu.be/qLgJLLM0T5s)
+
 ## 목차
 
 - [요구 사항](#요구-사항)
