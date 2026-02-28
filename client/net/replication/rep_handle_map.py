@@ -15,6 +15,7 @@ from net.net_serialization import (
     read_rep_movement,
 )
 from net.identity.unique_net_id_repl import FUniqueNetIdRepl
+from net.replication.struct_serializers import ALL_STRUCT_SERIALIZERS
 
 _DATA_PATH = Path(__file__).parent / "data" / "rep_layout.json"
 
@@ -59,12 +60,9 @@ _STRUCT_SERIALIZERS = {
     "struct:RepMovement_Short":             lambda r, _: read_rep_movement(r, rotation_short=True),
     "struct:UniqueNetIdRepl":               lambda r, _: FUniqueNetIdRepl.read(r),
     "struct:Vector_NetQuantizeNormal":      lambda r, _: read_vector_fixed_normal(r),
+
+    **ALL_STRUCT_SERIALIZERS,
 }
-
-
-def register_struct_serializer(type_str: str, serializer) -> None:
-    """Register an external struct serializer (e.g. from game-specific modules)."""
-    _STRUCT_SERIALIZERS[type_str] = serializer
 
 
 _MISSING_ENUM_BITS: set[str] = set()
