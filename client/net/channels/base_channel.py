@@ -13,6 +13,7 @@ from constants import NET_MAX_CONSTRUCTED_PARTIAL_BUNCH_SIZE_BYTES, RELIABLE_BUF
 
 if TYPE_CHECKING:
     from net.connection import NetConnection
+    from net.packets.out_bunch import FOutBunch
 
 
 class Channel:
@@ -22,6 +23,7 @@ class Channel:
         'open_packet_id',
         'num_in_rec', 'in_rec',
         'in_partial_bunch',
+        'out_rec', 'num_out_rec',
         'final_packets',
     )
 
@@ -43,6 +45,10 @@ class Channel:
         self.in_rec: dict[int, FInBunch] = {}
 
         self.in_partial_bunch: Optional[FInBunch] = None
+
+        self.out_rec: list[FOutBunch] = []
+        self.num_out_rec: int = 0
+
         self.final_packets: list[bytes] = []
 
     def received_raw_bunch(self, bunch: FInBunch) -> tuple[bool, bool]:
@@ -248,6 +254,32 @@ class Channel:
 
     def on_channel_closed(self, close_reason: EChannelCloseReason) -> None:
         pass
+
+    def add_out_rec(self, bunch: FOutBunch) -> None:
+        self.out_rec.append(bunch)
+        self.num_out_rec += 1
+
+    def received_ack(self, acked_packet_id: int) -> None:
+        for out in self.out_rec:
+            if out.PacketId == acked_packet_id:
+                out.ReceivedAck = True
+        self._clean_acked_out_rec()
+
+    def received_nak(self, nak_packet_id: int) -> list[bytes]:
+        resend_packets: list[bytes] = []
+        for out in self.out_rec:
+            if out.PacketId == nak_packet_id and not out.ReceivedAck:
+                send_buffer = self.connection.init_send_buffer()
+                out.PacketId = self.connection.out_packet_id
+                self.connection.channel_record.setdefault(out.PacketId, []).append(self.ch_index)
+                resend_packets.append(self.connection.write_bunch_to_send_buffer(out, send_buffer))
+                print(f"[RESEND] Ch {self.ch_index} resending ChSeq {out.ChSequence}")
+        return resend_packets
+
+    def _clean_acked_out_rec(self) -> None:
+        while self.out_rec and self.out_rec[0].ReceivedAck:
+            self.out_rec.pop(0)
+            self.num_out_rec -= 1
 
     def _receive_net_guid_bunch(self, bunch: FInBunch) -> None:
         PackageMapClient.begin_bunch_guids()

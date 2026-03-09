@@ -28,5 +28,8 @@ class FOutBunch(FBitWriter):
 
         self.CloseReason: EChannelCloseReason = EChannelCloseReason.Destroyed
 
+        self.PacketId: int = -1
+        self.ReceivedAck: bool = False
+
         self.ExportNetGUIDs: list = []
         self.NetFieldExports: list = []

@@ -203,6 +203,8 @@ class FBitReader:
                 result |= (byte_val >> 1) << shift
                 if not (byte_val & 1):
                     break
+            else:
+                raise BitReaderError("SerializeIntPacked: continuation bit still set after 5 bytes")
         else:
             bit_left = 8 - bit_used
             mask0 = (1 << bit_left) - 1
@@ -216,6 +218,8 @@ class FBitReader:
                 result |= (byte_val >> 1) << shift
                 if not (byte_val & 1):
                     break
+            else:
+                raise BitReaderError("SerializeIntPacked: continuation bit still set after 5 bytes")
 
         self._pos = pos
         return result

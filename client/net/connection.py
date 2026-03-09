@@ -43,6 +43,7 @@ class NetConnection:
         'b_internal_ack', 'handler_components',
         'extensions', 'package_map_state',
         'b_closed', 'close_reason', 'engine_net_ver',
+        'channel_record', 'resend_packets',
     )
 
     def __init__(
@@ -88,6 +89,9 @@ class NetConnection:
         self.close_reason: str = ""
         self.engine_net_ver: int = ENGINE_NET_VER_CURRENT
 
+        self.channel_record: dict[int, list[int]] = {}
+        self.resend_packets: list[bytes] = []
+
     def set_handlers(self, handlers: list):
         self.handler_components = handlers
 
@@ -126,6 +130,22 @@ class NetConnection:
         if not self._is_valid_channel_index(bunch.ChIndex):
             raise ValueError(f"Outgoing bunch channel index out of bounds: {bunch.ChIndex}")
 
+        if bunch.bReliable and not self.is_internal_ack():
+            self.out_reliable[bunch.ChIndex] = (self.out_reliable[bunch.ChIndex] + 1) & MAX_CHSEQUENCE_MASK
+            bunch.ChSequence = self.out_reliable[bunch.ChIndex]
+
+        pkt = self.write_bunch_to_send_buffer(bunch, send_buffer_writer)
+        bunch.PacketId = self.out_packet_id
+
+        if bunch.bReliable and not self.is_internal_ack():
+            channel = self.channels[bunch.ChIndex]
+            if channel is not None:
+                channel.add_out_rec(bunch)
+            self.channel_record.setdefault(bunch.PacketId, []).append(bunch.ChIndex)
+
+        return pkt
+
+    def write_bunch_to_send_buffer(self, bunch: FOutBunch, send_buffer_writer: FBitWriter) -> bytes:
         header_writer = FBitWriter(self.max_bunch_header_bits)
 
         header_writer.write_bit(bunch.bOpen or bunch.bClose)
@@ -144,8 +164,6 @@ class NetConnection:
         header_writer.write_bit(bunch.bPartial)
 
         if bunch.bReliable and not self.is_internal_ack():
-            self.out_reliable[bunch.ChIndex] = (self.out_reliable[bunch.ChIndex] + 1) & MAX_CHSEQUENCE_MASK
-            bunch.ChSequence = self.out_reliable[bunch.ChIndex]
             header_writer.write_int_wrapped(bunch.ChSequence, MAX_CHSEQUENCE)
 
         if bunch.bPartial:
@@ -216,13 +234,26 @@ class NetConnection:
         return channel
 
     def _handle_ack(self, seq: SequenceNumber, delivered: bool):
-        expected = (self.out_ack_packet_id + 1) & SequenceNumber.SeqNumberMask
-        if seq.value == expected:
-            self.out_ack_packet_id = expected
-        else:
-            self.out_ack_packet_id = seq.value
-        # Placeholder for per-packet delivery callbacks (resent/retire logic).
-        _ = delivered
+        self.out_ack_packet_id = seq.value
+
+        ch_indices = self.channel_record.pop(seq.value, None)
+        if ch_indices is None:
+            return
+
+        seen = set()
+        for ch_index in ch_indices:
+            if ch_index in seen:
+                continue
+            seen.add(ch_index)
+
+            channel = self.channels[ch_index]
+            if channel is None:
+                continue
+
+            if delivered:
+                channel.received_ack(seq.value)
+            else:
+                self.resend_packets.extend(channel.received_nak(seq.value))
 
     def _parse_packet_header_and_update_notify(self, reader: FBitReader) -> bool:
         notification_header = self.packet_notify.read_header(reader)
@@ -413,6 +444,10 @@ class NetConnection:
             final_packets.append(self.create_empty_packet(80))
             return final_packets
 
+        if self.resend_packets:
+            final_packets.extend(self.resend_packets)
+            self.resend_packets.clear()
+
         b_skip_ack = self._process_bunches(reader, final_packets)
 
         # Keep sequence history in sync even when rejecting packet payload.
@@ -420,10 +455,6 @@ class NetConnection:
             self.packet_notify.nak_seq(SequenceNumber(self.in_packet_id))
         else:
             self.packet_notify.ack_seq(SequenceNumber(self.in_packet_id))
-
-        # Always send ACK packet after processing (Not required. differ from actual logic)
-        # ack_packet = self._create_ack_packet()
-        # final_packets.append(ack_packet)
 
         return final_packets
 

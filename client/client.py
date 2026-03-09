@@ -52,6 +52,12 @@ class Logger:
         self.terminal.flush()
         self.log.flush()
 
+    def close(self) -> None:
+        try:
+            self.log.close()
+        except Exception:
+            pass
+
 
 _logger: Logger | None = None
 
@@ -202,6 +208,8 @@ def main(server_ip: str, server_port: int, *, dashboard: bool = False) -> None:
                 pass
         sock.close()
         print("[INFO] Connection closed")
+        if _logger is not None:
+            _logger.close()
 
 
 if __name__ == "__main__":

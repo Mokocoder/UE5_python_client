@@ -1,5 +1,5 @@
 # net/reliability/sequence_number.py
-"""15-bit sequence number with proper wraparound (TSequenceNumber<15>)."""
+"""Wrapping sequence number (TSequenceNumber<SEQUENCE_NUMBER_BITS>)."""
 from __future__ import annotations
 
 from constants import SEQUENCE_NUMBER_BITS, SEQ_NUMBER_COUNT, SEQ_NUMBER_HALF, SEQ_NUMBER_MASK
@@ -69,7 +69,8 @@ class SequenceNumber:
         return SequenceNumber(self._value + 1)
 
     def __iadd__(self, other: int) -> SequenceNumber:
-        return SequenceNumber(self._value + other)
+        self._value = (self._value + other) & SequenceNumber.SeqNumberMask
+        return self
 
     def __add__(self, other: int) -> SequenceNumber:
         return SequenceNumber(self._value + other)
