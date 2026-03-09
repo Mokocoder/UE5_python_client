@@ -31,7 +31,6 @@ UE5 Lyra Starter Game 전용 서버에 접속하여 핸드셰이크, 로그인, 
   - [핸드셰이크](#핸드셰이크)
   - [신뢰성 시스템](#신뢰성-시스템)
 - [데이터 파일](#데이터-파일)
-- [예제 로그](#예제-로그)
 - [커맨드 & 대시보드](#커맨드--대시보드)
   - [웹 대시보드](#웹-대시보드)
   - [사용 가능한 커맨드](#사용-가능한-커맨드)
@@ -216,9 +215,6 @@ Lyra/
 │       └── rpc/                             # RPC 시스템
 │           ├── base.py                      # RPCBase + RPCRegistry
 │           └── sender.py                    # 송신 RPC 패킷 빌더
-│
-├── example/                                 # 예제 출력
-│   └── client_20260227_204023.log           # 실제 연결 세션 로그 (패킷 + 리플리케이션 결과)
 │
 └── .gitignore
 ```
@@ -429,32 +425,6 @@ Reliable 번치가 순서대로 도착하지 않으면 `in_rec` 딕셔너리에 
 |------|------|
 | `rep_layout.json` | 클래스별 리플리케이션 프로퍼티 핸들 (C++ 시드 + BP 프로퍼티) |
 | `class_net_cache.json` | 클래스별 넷 필드 export 인덱스 (RPC/CustomDelta 해석용) |
-
-## 예제 로그
-
-`example/client_20260227_204023.log`에 실제 연결 세션의 전체 로그가 포함되어 있습니다:
-
-```
-[->] Init               (48) a00102000098e40f32...
-[<-] Challenge          (50) a00182000098e40f32...
-[->] Challenge Response (51) a00102810098e40f32...
-[<-] Challenge Ack      (51) a00182810098e40f32...
-[INFO] CachedClientID: 0
-[INFO] InSeq: 8965, OutSeq: 4611
-[->] NMT_Hello          (31) 00108c0312000000c0...
-
-============================================================
-Connected! Listening...
-============================================================
-
-[<-] Server             (32) 0008480523000000c0...
-[->] Response           (52) 00108c041200000040...
-...
-[REPLAYOUT] Auto-registered LyraPlayerState (32 defs, 32 total handles)
-[REPLAYOUT] LyraPlayerState OK handles=[5, 13, 14, ...] props={RemoteRole=1, ...}
-[REPLAYOUT] B_Hero_ShooterMannequin_C OK handles=[...] props={RemoteRole=1,
-    ReplicatedMovement={'Location': FVector(2919.94, -1122.85, -443.96), ...}, ...}
-```
 
 ## 커맨드 & 대시보드
 

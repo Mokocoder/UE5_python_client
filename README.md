@@ -31,7 +31,6 @@ Connects to a UE5 Lyra Starter Game dedicated server and handles the full connec
   - [Handshake](#handshake)
   - [Reliability System](#reliability-system)
 - [Data Files](#data-files)
-- [Example Log](#example-log)
 - [Commands & Dashboard](#commands--dashboard)
   - [Web Dashboard](#web-dashboard)
   - [Available Commands](#available-commands)
@@ -216,9 +215,6 @@ Lyra/
 │       └── rpc/                             # RPC system
 │           ├── base.py                      # RPCBase + RPCRegistry
 │           └── sender.py                    # Outgoing RPC packet builder
-│
-├── example/                                 # Example output
-│   └── client_20260227_204023.log           # Actual connection session log
 │
 └── .gitignore
 ```
@@ -429,32 +425,6 @@ JSON files in `data/` directories are generated from the UE5 project using a two
 |------|-------------|
 | `rep_layout.json` | Per-class replication property handles (C++ seed + BP properties) |
 | `class_net_cache.json` | Per-class net field export indices for RPC/CustomDelta resolution |
-
-## Example Log
-
-`example/client_20260227_204023.log` contains the full log of an actual connection session:
-
-```
-[->] Init               (48) a00102000098e40f32...
-[<-] Challenge          (50) a00182000098e40f32...
-[->] Challenge Response (51) a00102810098e40f32...
-[<-] Challenge Ack      (51) a00182810098e40f32...
-[INFO] CachedClientID: 0
-[INFO] InSeq: 8965, OutSeq: 4611
-[->] NMT_Hello          (31) 00108c0312000000c0...
-
-============================================================
-Connected! Listening...
-============================================================
-
-[<-] Server             (32) 0008480523000000c0...
-[->] Response           (52) 00108c041200000040...
-...
-[REPLAYOUT] Auto-registered LyraPlayerState (32 defs, 32 total handles)
-[REPLAYOUT] LyraPlayerState OK handles=[5, 13, 14, ...] props={RemoteRole=1, ...}
-[REPLAYOUT] B_Hero_ShooterMannequin_C OK handles=[...] props={RemoteRole=1,
-    ReplicatedMovement={'Location': FVector(2919.94, -1122.85, -443.96), ...}, ...}
-```
 
 ## Commands & Dashboard
 
