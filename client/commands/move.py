@@ -426,25 +426,26 @@ def _cmd_move(ctx: CommandContext, tokens: list[str]) -> tuple[bool, bool]:
 # Tick (called from main event loop)
 # ---------------------------------------------------------------------------
 
+_INF = float('inf')
+
+
 def tick_move(
     conn: NetConnection,
     sock: socket.socket,
     server_addr: tuple[str, int],
-) -> bool:
-    """Send one move packet if it's time.  Returns True if a packet was sent."""
+) -> tuple[bool, float]:
     ms = _get_move_state(conn)
     if not ms.active and ms.pending_stop <= 0:
-        return False
+        return False, _INF
 
     now = time.perf_counter()
     if now < ms.next_send_at:
-        return False
+        return False, ms.next_send_at
 
     real_dt = now - ms.last_send_time if ms.last_send_time > 0 else ms.dt
     ms.last_send_time = now
     ms.next_send_at = now + ms.dt
 
-    # -- active phase --------------------------------------------------------
     if ms.active:
         if ms.elapsed >= ms.duration:
             ms.active = False
@@ -455,7 +456,7 @@ def tick_move(
                 cmd_log("[CMD] move aborted: expression evaluators not initialized")
                 ms.active = False
                 ms.pending_stop = 0
-                return False
+                return False, _INF
 
             try:
                 vx = ms.fx_eval(ms.elapsed)
@@ -465,7 +466,7 @@ def tick_move(
                 cmd_log(f"[CMD] move aborted: {exc}")
                 ms.active = False
                 ms.pending_stop = 0
-                return False
+                return False, _INF
 
             ms.loc_x += vx * real_dt
             ms.loc_y += vy * real_dt
@@ -474,18 +475,18 @@ def tick_move(
             ms.elapsed += real_dt
 
             _send_move_packet(ms, conn, sock, server_addr, vx, vy, vz)
-            return True
+            return True, ms.next_send_at
 
-    # -- stop phase ----------------------------------------------------------
     if ms.pending_stop > 0:
         ms.ts += real_dt
         _send_move_packet(ms, conn, sock, server_addr, 0.0, 0.0, 0.0)
         ms.pending_stop -= 1
         if ms.pending_stop <= 0:
             cmd_log("[CMD] move stop packets sent")
-        return True
+            return True, _INF
+        return True, ms.next_send_at
 
-    return False
+    return False, _INF
 
 
 register("move", _cmd_move)

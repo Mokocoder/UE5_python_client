@@ -500,7 +500,6 @@ TEMPLATES = [
 
 - No encryption: cannot connect to servers with AES-GCM/DTLS enabled
 - Some structs unsupported: `ActiveGameplayEffectsContainer`, `GameplayTagStackContainer` and other GAS-related complex struct deserializers are partially missing
-- Single connection: concurrent multi-connection is not supported
 
 ## License
 
