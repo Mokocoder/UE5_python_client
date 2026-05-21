@@ -507,3 +507,5 @@ This project is created for educational and research purposes.
 It is a reference implementation for understanding and learning the UE5 network protocol.
 
 Commercial use is prohibited. This code may not be used in for-profit products, services, or revenue-generating activities.
+
+For commercial use inquiries, please contact `mokocoder` on Discord.
